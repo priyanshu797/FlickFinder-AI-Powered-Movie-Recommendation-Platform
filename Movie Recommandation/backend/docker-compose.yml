@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cineai-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./movies.db:/app/movies.db          # persist sqlite database on host
+      - ./:/app                             # mount code for development (optional)
+    env_file:
+      - .env
+    environment:
+      - FLASK_ENV=production
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
