@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Film, Sparkles, Search, Star, Calendar, Clock, TrendingUp, Play, BookmarkPlus, Share2, BarChart3, ChevronDown, ChevronRight, History } from 'lucide-react';
+import { Film, Sparkles, Search, Star, Calendar, Clock, TrendingUp, Play, Share2, BarChart3, ChevronDown, ChevronRight, History, BookmarkPlus, Award, Users, Zap, Info, Heart, ExternalLink } from 'lucide-react';
 
 // API Configuration
 const API_BASE_URL = "http://localhost:5000";
@@ -15,7 +15,6 @@ function App() {
   const [selectedYears, setSelectedYears] = useState([]);
   const [showGenreDropdown, setShowGenreDropdown] = useState(false);
   const [showYearDropdown, setShowYearDropdown] = useState(false);
-  const [showAnalytics, setShowAnalytics] = useState(false);
   const [sessionId, setSessionId] = useState('');
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
@@ -23,15 +22,13 @@ function App() {
   const genreDropdownRef = useRef(null);
   const yearDropdownRef = useRef(null);
 
-  // Initialize session ID
   useEffect(() => {
-    let storedSessionId = localStorage.getItem('cineai_session_id');
+    let storedSessionId = localStorage.getItem('flickfinder_session_id');
     if (!storedSessionId) {
       storedSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem('cineai_session_id', storedSessionId);
+      localStorage.setItem('flickfinder_session_id', storedSessionId);
     }
     setSessionId(storedSessionId);
-    console.log('Session ID:', storedSessionId);
     
     if (storedSessionId) {
       loadHistory(storedSessionId);
@@ -44,7 +41,6 @@ function App() {
       const data = await response.json();
       if (data.success) {
         setHistory(data.recommendations || []);
-        console.log('Loaded history:', data.recommendations?.length || 0);
       }
     } catch (err) {
       console.error('Failed to load history:', err);
@@ -108,9 +104,6 @@ function App() {
     }
     setPreference(newPreference);
   };
-  useEffect(() => {
-    console.log("API BASE URL:", API_BASE_URL);
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -126,8 +119,6 @@ function App() {
     setSearched(true);
     setMovies([]);
 
-    console.log('Submitting request with:', { query: preference, session_id: sessionId });
-
     try {
       const response = await fetch(`${API_BASE_URL}/api/recommend`, {
         method: 'POST',
@@ -140,15 +131,12 @@ function App() {
         })
       });
 
-      console.log('Response status:', response.status);
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('Response data:', data);
       
       if (data.success && data.movies) {
         setMovies(data.movies);
@@ -158,7 +146,6 @@ function App() {
         setError(data.error || 'Failed to get recommendations');
       }
     } catch (err) {
-      console.error('Error details:', err);
       setError(`Connection error: ${err.message}. Make sure backend is running on port 5000.`);
     } finally {
       setLoading(false);
@@ -193,350 +180,228 @@ function App() {
     }
   };
 
-  const styles = {
-    container: {
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #020617 0%, #1e3a8a 50%, #0f172a 100%)',
-      position: 'relative',
-      overflow: 'hidden',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    },
-    bgGlow1: {
-      position: 'fixed',
-      top: '25%',
-      left: '25%',
-      width: '384px',
-      height: '384px',
-      background: 'rgba(59, 130, 246, 0.2)',
-      borderRadius: '50%',
-      filter: 'blur(80px)',
-      pointerEvents: 'none',
-    },
-    bgGlow2: {
-      position: 'fixed',
-      bottom: '25%',
-      right: '25%',
-      width: '384px',
-      height: '384px',
-      background: 'rgba(99, 102, 241, 0.2)',
-      borderRadius: '50%',
-      filter: 'blur(80px)',
-      pointerEvents: 'none',
-    },
-    mainContent: {
-      position: 'relative',
-      zIndex: 10,
-      maxWidth: '1280px',
-      margin: '0 auto',
-      padding: '48px 16px',
-    },
-    header: {
-      textAlign: 'center',
-      marginBottom: '64px',
-      paddingTop: '32px',
-    },
-    iconWrapper: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '96px',
-      height: '96px',
-      background: 'linear-gradient(135deg, #60a5fa, #6366f1)',
-      borderRadius: '24px',
-      marginBottom: '32px',
-      boxShadow: '0 20px 50px rgba(59, 130, 246, 0.5)',
-    },
-    title: {
-      fontSize: '64px',
-      fontWeight: 'bold',
-      background: 'linear-gradient(90deg, #bfdbfe, #a5b4fc, #bfdbfe)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      marginBottom: '16px',
-      letterSpacing: '-0.025em',
-    },
-    subtitle: {
-      fontSize: '20px',
-      color: 'rgba(191, 219, 254, 0.8)',
-      maxWidth: '768px',
-      margin: '0 auto',
-      fontWeight: '300',
-    },
-    searchCard: {
-      background: 'rgba(15, 23, 42, 0.8)',
-      backdropFilter: 'blur(20px)',
-      borderRadius: '24px',
-      padding: '32px',
-      border: '1px solid rgba(59, 130, 246, 0.2)',
-      boxShadow: '0 0 40px rgba(59, 130, 246, 0.15)',
-      maxWidth: '896px',
-      margin: '0 auto 64px',
-    },
-    dropdownContainer: {
-      display: 'flex',
-      gap: '16px',
-      marginBottom: '24px',
-      flexWrap: 'wrap',
-    },
-    dropdownWrapper: {
-      position: 'relative',
-      flex: 1,
-      minWidth: '200px',
-    },
-    dropdownButton: {
-      width: '100%',
-      padding: '14px 20px',
-      background: 'rgba(30, 41, 59, 0.8)',
-      border: '1px solid rgba(59, 130, 246, 0.3)',
-      borderRadius: '12px',
-      color: '#bfdbfe',
-      fontSize: '15px',
-      fontWeight: '600',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      transition: 'all 0.3s',
-    },
-    dropdownMenu: {
-      position: 'absolute',
-      top: '100%',
-      left: 0,
-      right: 0,
-      marginTop: '8px',
-      background: 'rgba(15, 23, 42, 0.95)',
-      backdropFilter: 'blur(20px)',
-      border: '1px solid rgba(59, 130, 246, 0.3)',
-      borderRadius: '16px',
-      padding: '8px',
-      maxHeight: '320px',
-      overflowY: 'auto',
-      zIndex: 1000,
-      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
-    },
-    dropdownGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(2, 1fr)',
-      gap: '6px',
-    },
-    dropdownItem: {
-      padding: '12px 16px',
-      background: 'rgba(30, 41, 59, 0.5)',
-      border: '1px solid rgba(59, 130, 246, 0.2)',
-      borderRadius: '8px',
-      color: '#bfdbfe',
-      fontSize: '14px',
-      cursor: 'pointer',
-      transition: 'all 0.2s',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    dropdownItemActive: {
-      background: 'linear-gradient(90deg, rgba(59, 130, 246, 0.3), rgba(99, 102, 241, 0.3))',
-      borderColor: 'rgba(96, 165, 250, 0.6)',
-      color: '#dbeafe',
-    },
-    textarea: {
-      width: '100%',
-      padding: '16px 24px',
-      background: 'rgba(30, 41, 59, 0.5)',
-      border: '1px solid rgba(59, 130, 246, 0.3)',
-      borderRadius: '16px',
-      color: '#eff6ff',
-      fontSize: '16px',
-      fontFamily: 'inherit',
-      resize: 'none',
-      outline: 'none',
-    },
-    buttonContainer: {
-      marginTop: '24px',
-      display: 'flex',
-      flexWrap: 'wrap',
-      gap: '12px',
-      justifyContent: 'center',
-    },
-    primaryButton: {
-      padding: '16px 32px',
-      background: 'linear-gradient(90deg, #3b82f6, #6366f1)',
-      color: 'white',
-      border: 'none',
-      borderRadius: '12px',
-      fontWeight: '600',
-      fontSize: '16px',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-      transition: 'all 0.3s',
-      boxShadow: '0 8px 24px rgba(59, 130, 246, 0.3)',
-    },
-    secondaryButton: {
-      padding: '16px 24px',
-      background: 'rgba(30, 41, 59, 0.5)',
-      color: '#bfdbfe',
-      border: '1px solid rgba(59, 130, 246, 0.2)',
-      borderRadius: '12px',
-      fontWeight: '600',
-      fontSize: '16px',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-    },
-    errorBox: {
-      marginTop: '16px',
-      padding: '16px',
-      background: 'rgba(239, 68, 68, 0.1)',
-      border: '1px solid rgba(239, 68, 68, 0.3)',
-      borderRadius: '12px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-    },
-    successBox: {
-      marginTop: '16px',
-      padding: '16px',
-      background: 'rgba(34, 197, 94, 0.1)',
-      border: '1px solid rgba(34, 197, 94, 0.3)',
-      borderRadius: '12px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-    },
-    loadingContainer: {
-      textAlign: 'center',
-      padding: '64px 0',
-    },
-    spinner: {
-      width: '64px',
-      height: '64px',
-      border: '4px solid rgba(59, 130, 246, 0.2)',
-      borderTop: '4px solid #3b82f6',
-      borderRadius: '50%',
-      animation: 'spin 1s linear infinite',
-      margin: '0 auto 16px',
-    },
-    movieCard: {
-      background: 'rgba(15, 23, 42, 0.6)',
-      backdropFilter: 'blur(20px)',
-      borderRadius: '24px',
-      padding: '32px',
-      border: '1px solid rgba(59, 130, 246, 0.2)',
-      marginBottom: '24px',
-      transition: 'all 0.5s',
-    },
-    movieContent: {
-      display: 'flex',
-      gap: '32px',
-    },
-    posterBox: {
-      width: '192px',
-      height: '288px',
-      background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(99, 102, 241, 0.2))',
-      borderRadius: '16px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      border: '1px solid rgba(59, 130, 246, 0.3)',
-      flexShrink: 0,
-    },
-    movieTitle: {
-      fontSize: '32px',
-      fontWeight: 'bold',
-      background: 'linear-gradient(90deg, #dbeafe, #c7d2fe)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      marginBottom: '16px',
-    },
-    badge: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '8px',
-      padding: '6px 12px',
-      background: 'rgba(59, 130, 246, 0.1)',
-      border: '1px solid rgba(59, 130, 246, 0.3)',
-      borderRadius: '8px',
-      color: '#93c5fd',
-      fontSize: '14px',
-      marginRight: '16px',
-    },
-    ratingBox: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      background: 'linear-gradient(90deg, rgba(234, 179, 8, 0.2), rgba(249, 115, 22, 0.2))',
-      padding: '12px 20px',
-      borderRadius: '12px',
-      border: '1px solid rgba(234, 179, 8, 0.4)',
-    },
-    description: {
-      color: 'rgba(239, 246, 255, 0.8)',
-      lineHeight: '1.6',
-      fontSize: '16px',
-      marginTop: '16px',
-    },
-    historyCard: {
-      background: 'rgba(30, 41, 59, 0.5)',
-      borderRadius: '12px',
-      padding: '16px',
-      border: '1px solid rgba(59, 130, 246, 0.2)',
-      marginBottom: '12px',
-      cursor: 'pointer',
-      transition: 'all 0.3s',
-    },
-  };
-
   return (
-    <div style={styles.container}>
-      <div style={styles.bgGlow1}></div>
-      <div style={styles.bgGlow2}></div>
+    <div style={{
+      minHeight: '100vh',
+      background: '#0a0e27',
+      position: 'relative',
+      fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    }}>
+      {/* Animated Background Pattern */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: 0.03,
+        backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.05) 35px, rgba(255,255,255,.05) 70px)',
+        pointerEvents: 'none',
+      }}></div>
 
-      <div style={styles.mainContent}>
-        <div style={styles.header}>
-          <div style={styles.iconWrapper}>
-            <Film size={48} color="white" />
-          </div>
-          <h1 style={styles.title}>CineAI</h1>
-          <p style={styles.subtitle}>
-            Transform your movie discovery with AI-powered intelligence
-          </p>
+      {/* Sidebar Navigation */}
+      <div style={{
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        width: '80px',
+        background: 'rgba(15, 20, 45, 0.95)',
+        backdropFilter: 'blur(20px)',
+        borderRight: '1px solid rgba(255, 255, 255, 0.05)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '30px 0',
+        zIndex: 100,
+      }}>
+        <div style={{
+          width: '50px',
+          height: '50px',
+          background: 'linear-gradient(135deg, #ff6b6b, #ff8e53)',
+          borderRadius: '15px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: '40px',
+          boxShadow: '0 10px 30px rgba(255, 107, 107, 0.3)',
+        }}>
+          <Sparkles size={26} color="white" />
         </div>
 
-        <div style={styles.searchCard}>
-          <div style={styles.dropdownContainer}>
-            <div style={styles.dropdownWrapper} ref={genreDropdownRef}>
+        <div style={{flex: 1, display: 'flex', flexDirection: 'column', gap: '20px'}}>
+          <div style={{
+            width: '50px',
+            height: '50px',
+            background: 'rgba(255, 107, 107, 0.15)',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+          }}>
+            <Search size={22} color="#ff6b6b" />
+          </div>
+          <div style={{
+            width: '50px',
+            height: '50px',
+            background: 'transparent',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+          }}>
+            <TrendingUp size={22} color="rgba(255, 255, 255, 0.3)" />
+          </div>
+          <div style={{
+            width: '50px',
+            height: '50px',
+            background: 'transparent',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+          }}>
+            <Heart size={22} color="rgba(255, 255, 255, 0.3)" />
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div style={{
+        marginLeft: '80px',
+        padding: '40px 60px',
+        minHeight: '100vh',
+      }}>
+        {/* Top Header */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '50px',
+        }}>
+          <div>
+            <h1 style={{
+              fontSize: '42px',
+              fontWeight: '800',
+              color: '#ffffff',
+              margin: '0 0 8px 0',
+              letterSpacing: '-0.02em',
+            }}>FlickFinder</h1>
+            <p style={{
+              fontSize: '16px',
+              color: 'rgba(255, 255, 255, 0.4)',
+              margin: 0,
+            }}>AI-Powered Movie Discovery Platform</p>
+          </div>
+          
+          {history.length > 0 && (
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              style={{
+                padding: '12px 24px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                color: 'rgba(255, 255, 255, 0.6)',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <History size={18} />
+              History ({history.length})
+            </button>
+          )}
+        </div>
+
+        {/* Search Section */}
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.02)',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          borderRadius: '20px',
+          padding: '40px',
+          marginBottom: '50px',
+        }}>
+          <div style={{
+            display: 'flex',
+            gap: '16px',
+            marginBottom: '20px',
+          }}>
+            {/* Genre Dropdown */}
+            <div style={{ position: 'relative', flex: 1 }} ref={genreDropdownRef}>
               <button
                 onClick={() => setShowGenreDropdown(!showGenreDropdown)}
-                style={styles.dropdownButton}
+                style={{
+                  width: '100%',
+                  padding: '16px 20px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '12px',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  transition: 'all 0.3s',
+                }}
               >
-                <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-                  <Film size={18} />
-                  <span>
-                    {selectedCategories.length > 0 
-                      ? selectedCategories.length === 1 
-                        ? selectedCategories[0]
-                        : `${selectedCategories.length} Genres`
-                      : 'Genre'}
-                  </span>
-                </div>
+                <span>
+                  {selectedCategories.length > 0 
+                    ? selectedCategories.join(', ')
+                    : '🎬 Select Genres'}
+                </span>
                 <ChevronDown size={18} />
               </button>
 
               {showGenreDropdown && (
-                <div style={styles.dropdownMenu}>
-                  <div style={styles.dropdownGrid}>
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  marginTop: '8px',
+                  background: 'rgba(15, 20, 45, 0.98)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '16px',
+                  padding: '12px',
+                  maxHeight: '350px',
+                  overflowY: 'auto',
+                  zIndex: 1000,
+                  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6)',
+                }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {categories.map((category) => (
                       <button
                         key={category}
                         onClick={() => handleCategorySelect(category)}
                         style={{
-                          ...styles.dropdownItem,
-                          ...(selectedCategories.includes(category) ? styles.dropdownItemActive : {})
+                          padding: '12px 16px',
+                          background: selectedCategories.includes(category) 
+                            ? 'linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 142, 83, 0.2))' 
+                            : 'transparent',
+                          border: 'none',
+                          borderRadius: '10px',
+                          color: selectedCategories.includes(category) ? '#ffffff' : 'rgba(255, 255, 255, 0.6)',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          textAlign: 'left',
                         }}
                       >
-                        <span>{category}</span>
-                        {selectedCategories.includes(category) && <ChevronRight size={14} />}
+                        {category}
                       </button>
                     ))}
                   </div>
@@ -544,38 +409,71 @@ function App() {
               )}
             </div>
 
-            <div style={styles.dropdownWrapper} ref={yearDropdownRef}>
+            {/* Year Dropdown */}
+            <div style={{ position: 'relative', flex: 1 }} ref={yearDropdownRef}>
               <button
                 onClick={() => setShowYearDropdown(!showYearDropdown)}
-                style={styles.dropdownButton}
+                style={{
+                  width: '100%',
+                  padding: '16px 20px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '12px',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  transition: 'all 0.3s',
+                }}
               >
-                <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-                  <Calendar size={18} />
-                  <span>
-                    {selectedYears.length > 0 
-                      ? selectedYears.length === 1 
-                        ? selectedYears[0]
-                        : `${selectedYears.length} Years`
-                      : 'By Year'}
-                  </span>
-                </div>
+                <span>
+                  {selectedYears.length > 0 
+                    ? selectedYears.join(', ')
+                    : '📅 Select Years'}
+                </span>
                 <ChevronDown size={18} />
               </button>
 
               {showYearDropdown && (
-                <div style={styles.dropdownMenu}>
-                  <div style={styles.dropdownGrid}>
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  marginTop: '8px',
+                  background: 'rgba(15, 20, 45, 0.98)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '16px',
+                  padding: '12px',
+                  maxHeight: '350px',
+                  overflowY: 'auto',
+                  zIndex: 1000,
+                  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6)',
+                }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
                     {yearRanges.map((year) => (
                       <button
                         key={year}
                         onClick={() => handleYearSelect(year)}
                         style={{
-                          ...styles.dropdownItem,
-                          ...(selectedYears.includes(year) ? styles.dropdownItemActive : {})
+                          padding: '12px',
+                          background: selectedYears.includes(year) 
+                            ? 'linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 142, 83, 0.2))' 
+                            : 'transparent',
+                          border: 'none',
+                          borderRadius: '10px',
+                          color: selectedYears.includes(year) ? '#ffffff' : 'rgba(255, 255, 255, 0.6)',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
                         }}
                       >
-                        <span>{year}</span>
-                        {selectedYears.includes(year) && <ChevronRight size={14} />}
+                        {year}
                       </button>
                     ))}
                   </div>
@@ -584,35 +482,64 @@ function App() {
             </div>
           </div>
 
-          <textarea
-            value={preference}
-            onChange={(e) => setPreference(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && e.ctrlKey) {
-                handleSubmit(e);
-              }
-            }}
-            placeholder="Your selection will appear here, or type custom preferences..."
-            style={styles.textarea}
-            rows="3"
-            disabled={loading}
-          />
-          
-          <div style={styles.buttonContainer}>
+          <div style={{
+            display: 'flex',
+            gap: '12px',
+            alignItems: 'center',
+          }}>
+            <input
+              type="text"
+              value={preference}
+              onChange={(e) => setPreference(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSubmit(e);
+                }
+              }}
+              placeholder="Describe your mood or what you want to watch..."
+              style={{
+                flex: 1,
+                padding: '18px 24px',
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
+                color: '#ffffff',
+                fontSize: '15px',
+                fontFamily: 'inherit',
+                outline: 'none',
+              }}
+              disabled={loading}
+            />
+            
             <button
               onClick={handleSubmit}
               disabled={loading}
-              style={{...styles.primaryButton, opacity: loading ? 0.6 : 1}}
+              style={{
+                padding: '18px 36px',
+                background: loading ? 'rgba(255, 107, 107, 0.5)' : 'linear-gradient(135deg, #ff6b6b, #ff8e53)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontWeight: '600',
+                fontSize: '15px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                transition: 'all 0.3s',
+                boxShadow: '0 8px 24px rgba(255, 107, 107, 0.3)',
+                whiteSpace: 'nowrap',
+              }}
             >
               {loading ? (
                 <>
-                  <div style={{width: '20px', height: '20px', border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid white', borderRadius: '50%', animation: 'spin 1s linear infinite'}}></div>
-                  <span>Discovering Movies...</span>
+                  <div style={{width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid white', borderRadius: '50%', animation: 'spin 1s linear infinite'}}></div>
+                  <span>Searching...</span>
                 </>
               ) : (
                 <>
-                  <Search size={20} />
-                  <span>Get Recommendations</span>
+                  <Search size={18} />
+                  <span>Find Movies</span>
                 </>
               )}
             </button>
@@ -627,57 +554,67 @@ function App() {
                 setSelectedCategories([]);
                 setSelectedYears([]);
               }}
-              style={styles.secondaryButton}
+              style={{
+                padding: '18px',
+                background: 'rgba(255, 255, 255, 0.03)',
+                color: 'rgba(255, 255, 255, 0.5)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
+                fontWeight: '600',
+                fontSize: '15px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+              }}
             >
-              <Sparkles size={20} />
-              <span>Clear</span>
+              <Sparkles size={18} />
             </button>
-
-            <button
-              onClick={() => setShowAnalytics(!showAnalytics)}
-              style={styles.secondaryButton}
-            >
-              <BarChart3 size={20} />
-              <span>Analytics</span>
-            </button>
-
-            {history.length > 0 && (
-              <button
-                onClick={() => setShowHistory(!showHistory)}
-                style={styles.secondaryButton}
-              >
-                <History size={20} />
-                <span>History ({history.length})</span>
-              </button>
-            )}
           </div>
 
           {error && (
-            <div style={styles.errorBox}>
-              <div style={{width: '8px', height: '8px', background: '#ef4444', borderRadius: '50%'}}></div>
-              <p style={{color: '#fca5a5', fontSize: '14px', margin: 0}}>{error}</p>
-            </div>
+            <div style={{
+              marginTop: '16px',
+              padding: '14px 18px',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: '10px',
+              color: '#fca5a5',
+              fontSize: '14px',
+            }}>{error}</div>
           )}
 
           {success && (
-            <div style={styles.successBox}>
-              <div style={{width: '8px', height: '8px', background: '#22c55e', borderRadius: '50%'}}></div>
-              <p style={{color: '#86efac', fontSize: '14px', margin: 0}}>{success}</p>
-            </div>
+            <div style={{
+              marginTop: '16px',
+              padding: '14px 18px',
+              background: 'rgba(34, 197, 94, 0.1)',
+              border: '1px solid rgba(34, 197, 94, 0.3)',
+              borderRadius: '10px',
+              color: '#86efac',
+              fontSize: '14px',
+            }}>{success}</div>
           )}
 
           {showHistory && history.length > 0 && (
-            <div style={{marginTop: '24px'}}>
+            <div style={{marginTop: '24px', paddingTop: '24px', borderTop: '1px solid rgba(255, 255, 255, 0.05)'}}>
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
-                <h3 style={{color: '#dbeafe', fontSize: '18px', margin: 0}}>Recent Searches</h3>
-                <button onClick={clearHistory} style={{padding: '8px 16px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '8px', color: '#fca5a5', fontSize: '12px', cursor: 'pointer'}}>
+                <h3 style={{color: 'rgba(255, 255, 255, 0.8)', fontSize: '16px', fontWeight: '600', margin: 0}}>Recent Searches</h3>
+                <button onClick={clearHistory} style={{padding: '6px 12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '8px', color: '#fca5a5', fontSize: '12px', cursor: 'pointer'}}>
                   Clear All
                 </button>
               </div>
               {history.map((item) => (
-                <div key={item.id} onClick={() => loadHistoryItem(item)} style={styles.historyCard}>
-                  <p style={{color: '#93c5fd', fontSize: '14px', margin: '0 0 8px 0'}}>{item.query}</p>
-                  <p style={{color: 'rgba(147, 197, 253, 0.6)', fontSize: '12px', margin: 0}}>
+                <div key={item.id} onClick={() => loadHistoryItem(item)} style={{
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  borderRadius: '10px',
+                  padding: '14px 16px',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  marginBottom: '10px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s',
+                }}>
+                  <p style={{color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px', margin: '0 0 6px 0'}}>{item.query}</p>
+                  <p style={{color: 'rgba(255, 255, 255, 0.4)', fontSize: '12px', margin: 0}}>
                     {item.movies.length} movies • {new Date(item.created_at).toLocaleDateString()}
                   </p>
                 </div>
@@ -686,94 +623,403 @@ function App() {
           )}
         </div>
 
+        {/* Loading State */}
         {loading && (
-          <div style={styles.loadingContainer}>
-            <div style={styles.spinner}></div>
-            <div style={{color: '#93c5fd', fontSize: '18px'}}>
-              <Sparkles size={20} style={{display: 'inline', marginRight: '8px'}} />
-              Curating your perfect watchlist...
+          <div style={{ textAlign: 'center', padding: '80px 0' }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              border: '4px solid rgba(255, 107, 107, 0.2)',
+              borderTop: '4px solid #ff6b6b',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 24px',
+            }}></div>
+            <div style={{color: 'rgba(255, 255, 255, 0.6)', fontSize: '16px', fontWeight: '500'}}>
+              Searching our vast movie library...
             </div>
           </div>
         )}
 
+        {/* Movies - Horizontal Scroll Layout */}
         {movies.length > 0 && (
           <div>
-            <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px'}}>
-              <TrendingUp size={28} color="#60a5fa" />
-              <h2 style={{fontSize: '36px', fontWeight: 'bold', background: 'linear-gradient(90deg, #bfdbfe, #a5b4fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0}}>
-                Curated For You
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '30px',
+            }}>
+              <h2 style={{
+                fontSize: '28px',
+                fontWeight: '700',
+                color: '#ffffff',
+                margin: 0,
+              }}>
+                Recommended for You
               </h2>
+              <span style={{
+                fontSize: '14px',
+                color: 'rgba(255, 255, 255, 0.4)',
+              }}>
+                {movies.length} movies found
+              </span>
             </div>
             
-            {movies.map((movie, index) => (
-              <div key={index} style={styles.movieCard}>
-                <div style={styles.movieContent}>
-                  <div style={styles.posterBox}>
-                    <Film size={64} color="rgba(96, 165, 250, 0.6)" />
-                  </div>
-
-                  <div style={{flex: 1}}>
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px'}}>
-                      <div style={{flex: 1}}>
-                        <h3 style={styles.movieTitle}>{movie.title}</h3>
-                        <div>
-                          <span style={styles.badge}>
-                            <Calendar size={16} />
-                            {movie.year}
-                          </span>
-                          <span style={{...styles.badge, background: 'rgba(99, 102, 241, 0.1)', borderColor: 'rgba(99, 102, 241, 0.3)', color: '#c7d2fe'}}>
-                            <Clock size={16} />
-                            {movie.genre}
-                          </span>
-                        </div>
-                      </div>
-                      <div style={styles.ratingBox}>
-                        <Star size={20} color="#facc15" fill="#facc15" />
-                        <span style={{fontSize: '24px', fontWeight: 'bold', color: '#facc15'}}>{movie.rating}</span>
-                      </div>
-                    </div>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))',
+              gap: '20px',
+            }}>
+              {movies.map((movie, index) => (
+                <div key={index} style={{
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  height: '220px',
+                }}>
+                  {/* Left: Poster */}
+                  <div style={{
+                    width: '160px',
+                    background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.15), rgba(255, 142, 83, 0.15))',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    position: 'relative',
+                  }}>
+                    <Film size={50} color="rgba(255, 255, 255, 0.1)" strokeWidth={1.5} />
                     
-                    <p style={styles.description}>{movie.description}</p>
+                    {/* Rating Badge */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '12px',
+                      right: '12px',
+                      background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                      padding: '6px 10px',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      boxShadow: '0 4px 12px rgba(251, 191, 36, 0.4)',
+                    }}>
+                      <Star size={12} color="#ffffff" fill="#ffffff" />
+                      <span style={{fontSize: '13px', fontWeight: 'bold', color: '#ffffff'}}>{movie.rating}</span>
+                    </div>
+                  </div>
 
-                    <div style={{display: 'flex', gap: '12px', marginTop: '16px'}}>
-                      <button style={{padding: '10px 20px', background: 'rgba(59, 130, 246, 0.2)', border: '1px solid rgba(59, 130, 246, 0.4)', color: '#93c5fd', borderRadius: '12px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px'}}>
-                        <Play size={16} />
-                        Watch Trailer
+                  {/* Right: Content */}
+                  <div style={{
+                    flex: 1,
+                    padding: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}>
+                    {/* Title */}
+                    <h3 style={{
+                      fontSize: '18px',
+                      fontWeight: '700',
+                      color: '#ffffff',
+                      margin: '0 0 10px 0',
+                      lineHeight: '1.3',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    }}>{movie.title}</h3>
+
+                    {/* Meta */}
+                    <div style={{
+                      display: 'flex',
+                      gap: '10px',
+                      marginBottom: '12px',
+                      flexWrap: 'wrap',
+                    }}>
+                      <span style={{
+                        fontSize: '12px',
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                      }}>
+                        {movie.year}
+                      </span>
+                      <span style={{
+                        fontSize: '12px',
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                      }}>
+                        {movie.genre}
+                      </span>
+                    </div>
+
+                    {/* Description */}
+                    <p style={{
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      lineHeight: '1.6',
+                      fontSize: '13px',
+                      margin: '0 0 auto 0',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                    }}>{movie.description}</p>
+
+                    {/* Actions */}
+                    <div style={{
+                      display: 'flex',
+                      gap: '8px',
+                      marginTop: '14px',
+                    }}>
+                      <button style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        background: 'linear-gradient(135deg, #ff6b6b, #ff8e53)',
+                        border: 'none',
+                        color: '#ffffff',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        transition: 'all 0.3s',
+                      }}>
+                        <Play size={14} />
+                        Watch
                       </button>
-                      <button style={{padding: '10px 20px', background: 'rgba(30, 41, 59, 0.4)', border: '1px solid rgba(59, 130, 246, 0.2)', color: '#60a5fa', borderRadius: '12px', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px'}}>
-                        <Share2 size={16} />
-                        Share
+                      <button style={{
+                        padding: '8px 12px',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        color: 'rgba(255, 255, 255, 0.6)',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.3s',
+                      }}>
+                        <BookmarkPlus size={14} />
+                      </button>
+                      <button style={{
+                        padding: '8px 12px',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        color: 'rgba(255, 255, 255, 0.6)',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.3s',
+                      }}>
+                        <Share2 size={14} />
+                      </button>
+                      <button style={{
+                        padding: '8px 12px',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        color: 'rgba(255, 255, 255, 0.6)',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.3s',
+                      }}>
+                        <Info size={14} />
                       </button>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {!loading && !searched && (
-          <div style={{maxWidth: '1200px', margin: '0 auto'}}>
-            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px'}}>
-              {[
-                { icon: Sparkles, title: 'AI-Powered Intelligence', desc: 'Advanced algorithms understand your taste' },
-                { icon: Star, title: 'Personalized Curation', desc: 'Tailored recommendations just for you' },
-                { icon: Film, title: 'Vast Movie Library', desc: 'Discover gems across all genres' }
-              ].map((feature, i) => (
-                <div key={i} style={{background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(20px)', borderRadius: '16px', padding: '32px', border: '1px solid rgba(59, 130, 246, 0.2)', textAlign: 'center'}}>
-                  <div style={{width: '56px', height: '56px', background: 'linear-gradient(135deg, #3b82f6, #6366f1)', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px'}}>
-                    <feature.icon size={28} color="white" />
-                  </div>
-                  <h3 style={{color: '#dbeafe', fontWeight: 'bold', fontSize: '18px', marginBottom: '8px'}}>{feature.title}</h3>
-                  <p style={{color: 'rgba(147, 197, 253, 0.6)', fontSize: '14px', lineHeight: '1.5', margin: 0}}>{feature.desc}</p>
                 </div>
               ))}
             </div>
           </div>
         )}
+
+        {/* Feature Cards - When No Search */}
+        {!loading && !searched && (
+          <div style={{marginTop: '60px'}}>
+            <h2 style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              color: '#ffffff',
+              marginBottom: '30px',
+            }}>Why Choose FlickFinder?</h2>
+            
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '20px',
+            }}>
+              {[
+                { 
+                  icon: Zap, 
+                  title: 'Lightning Fast', 
+                  desc: 'Get instant movie recommendations powered by advanced AI algorithms',
+                  color: '#ff6b6b',
+                  gradient: 'linear-gradient(135deg, #ff6b6b, #ff8e53)',
+                },
+                { 
+                  icon: Award, 
+                  title: 'Quality Picks', 
+                  desc: 'Curated selection of highly-rated movies across all genres',
+                  color: '#fbbf24',
+                  gradient: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                },
+                { 
+                  icon: Users, 
+                  title: 'Personalized', 
+                  desc: 'Recommendations tailored to your unique taste and preferences',
+                  color: '#8b5cf6',
+                  gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                }
+              ].map((feature, i) => (
+                <div key={i} style={{
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  borderRadius: '16px',
+                  padding: '32px 24px',
+                  transition: 'all 0.3s',
+                  textAlign: 'center',
+                }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    background: feature.gradient,
+                    borderRadius: '16px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '20px',
+                    boxShadow: `0 10px 30px ${feature.color}40`,
+                  }}>
+                    <feature.icon size={28} color="white" />
+                  </div>
+                  <h3 style={{
+                    color: '#ffffff',
+                    fontWeight: '700',
+                    fontSize: '18px',
+                    marginBottom: '10px'
+                  }}>{feature.title}</h3>
+                  <p style={{
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    fontSize: '14px',
+                    lineHeight: '1.6',
+                    margin: 0
+                  }}>{feature.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Stats Section */}
+            <div style={{
+              marginTop: '40px',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '20px',
+            }}>
+              <div style={{
+                background: 'rgba(255, 107, 107, 0.05)',
+                border: '1px solid rgba(255, 107, 107, 0.2)',
+                borderRadius: '16px',
+                padding: '24px',
+                textAlign: 'center',
+              }}>
+                <div style={{
+                  fontSize: '32px',
+                  fontWeight: '800',
+                  color: '#ff6b6b',
+                  marginBottom: '8px',
+                }}>10K+</div>
+                <div style={{
+                  fontSize: '14px',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                }}>Movies Database</div>
+              </div>
+              
+              <div style={{
+                background: 'rgba(251, 191, 36, 0.05)',
+                border: '1px solid rgba(251, 191, 36, 0.2)',
+                borderRadius: '16px',
+                padding: '24px',
+                textAlign: 'center',
+              }}>
+                <div style={{
+                  fontSize: '32px',
+                  fontWeight: '800',
+                  color: '#fbbf24',
+                  marginBottom: '8px',
+                }}>98%</div>
+                <div style={{
+                  fontSize: '14px',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                }}>Match Accuracy</div>
+              </div>
+              
+              <div style={{
+                background: 'rgba(139, 92, 246, 0.05)',
+                border: '1px solid rgba(139, 92, 246, 0.2)',
+                borderRadius: '16px',
+                padding: '24px',
+                textAlign: 'center',
+              }}>
+                <div style={{
+                  fontSize: '32px',
+                  fontWeight: '800',
+                  color: '#8b5cf6',
+                  marginBottom: '8px',
+                }}>50K+</div>
+                <div style={{
+                  fontSize: '14px',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                }}>Happy Users</div>
+              </div>
+              
+              <div style={{
+                background: 'rgba(236, 72, 153, 0.05)',
+                border: '1px solid rgba(236, 72, 153, 0.2)',
+                borderRadius: '16px',
+                padding: '24px',
+                textAlign: 'center',
+              }}>
+                <div style={{
+                  fontSize: '32px',
+                  fontWeight: '800',
+                  color: '#ec4899',
+                  marginBottom: '8px',
+                }}>24/7</div>
+                <div style={{
+                  fontSize: '14px',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                }}>AI Support</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* Global Styles */}
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
@@ -785,20 +1031,50 @@ function App() {
         body {
           margin: 0;
           padding: 0;
+          overflow-x: hidden;
         }
 
         *::-webkit-scrollbar {
           width: 8px;
+          height: 8px;
         }
         
         *::-webkit-scrollbar-track {
-          background: rgba(30, 41, 59, 0.3);
-          border-radius: 4px;
+          background: rgba(255, 255, 255, 0.02);
         }
         
         *::-webkit-scrollbar-thumb {
-          background: rgba(59, 130, 246, 0.5);
+          background: rgba(255, 107, 107, 0.3);
           border-radius: 4px;
+        }
+
+        *::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 107, 107, 0.5);
+        }
+
+        button:hover {
+          transform: translateY(-1px);
+          opacity: 0.9;
+        }
+
+        button:active {
+          transform: translateY(0);
+        }
+
+        input:focus {
+          border-color: rgba(255, 107, 107, 0.4);
+          box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+        }
+
+        @media (max-width: 768px) {
+          .sidebar {
+            width: 60px !important;
+          }
+          
+          .main-content {
+            margin-left: 60px !important;
+            padding: 20px 20px !important;
+          }
         }
       `}</style>
     </div>
